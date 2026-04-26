@@ -1,7 +1,10 @@
 // test-smtp.js
+
+import { configDotenv } from "dotenv";
+configDotenv();
+
 import nodemailer from "nodemailer"
 import dns from "dns";
-
 dns.setDefaultResultOrder('ipv4first');
 
 const transporter = nodemailer.createTransport({
@@ -10,7 +13,7 @@ const transporter = nodemailer.createTransport({
     secure: false,
     auth: {
         user: 'argonmessager193@gmail.com',
-        pass: 'ayydizgqzoinivif'
+        pass: process.env.EMAIL_PASS
     },
     // Добавляем настройки для принудительного IPv4
     socketTimeout: 30000,
