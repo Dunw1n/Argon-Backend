@@ -1,5 +1,9 @@
 import nodemailer from 'nodemailer';
+import dns from "dns"
 
+
+
+dns.setDefaultResultOrder("ipv4first");
 // Настройка почтового транспорта
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || 'smtp.gmail.com',
@@ -12,6 +16,10 @@ const transporter = nodemailer.createTransport({
   tls: {
     ciphers: "SSLv3",
   },
+
+  socketTimeout: 30000,
+  connectionTimeout: 30000,
+  family: 4
 });
 
 // Проверка подключения
