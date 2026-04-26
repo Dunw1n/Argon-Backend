@@ -1,25 +1,14 @@
 import nodemailer from 'nodemailer';
-import dns from "dns";
-
-dns.setDefaultResultOrder("ipv4first");
 
 // Настройка почтового транспорта
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || 'smtp.gmail.com',
   port: 465,
-  secure: true, // для порта 587
-  family: 4, // принудительно IPv4
+  secure: true, 
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  // Убираем ciphers: "SSLv3" - это устаревший небезопасный протокол
-  tls: {
-    rejectUnauthorized: false, // для Railway (если проблемы с сертификатами)
-  },
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
 });
 
 // Проверка подключения
