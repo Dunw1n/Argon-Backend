@@ -1,31 +1,32 @@
 import nodemailer from 'nodemailer';
-import dns from "dns"
-
-
+import dns from "dns";
 
 dns.setDefaultResultOrder("ipv4first");
+
 // Настройка почтового транспорта
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: process.env.EMAIL_PORT || 587,
-  secure: false,
+  port: parseInt(process.env.EMAIL_PORT) || 587,
+  secure: false, // для порта 587
+  family: 4, // принудительно IPv4
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  // Убираем ciphers: "SSLv3" - это устаревший небезопасный протокол
   tls: {
-    ciphers: "SSLv3",
+    rejectUnauthorized: false, // для Railway (если проблемы с сертификатами)
   },
-
-  socketTimeout: 30000,
   connectionTimeout: 30000,
-  family: 4
+  greetingTimeout: 30000,
+  socketTimeout: 30000,
 });
 
 // Проверка подключения
 transporter.verify((error, success) => {
   if (error) {
-    console.error('❌ Email uration error:', error);
+    console.error('❌ Email configuration error:', error.message);
+    console.error('   Check EMAIL_USER and EMAIL_PASS in .env');
   } else {
     console.log('✅ Email service ready');
   }
@@ -42,7 +43,7 @@ class EmailService {
       : 'Вход в аккаунт';
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"Argon Messenger" <${process.env.EMAIL_USER}>`,
       to: email,
       subject,
       html: `
@@ -65,7 +66,14 @@ class EmailService {
       `,
     };
     
-    await transporter.sendMail(mailOptions);
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      console.log(`✅ Email sent to ${email}, messageId: ${info.messageId}`);
+      return { success: true, messageId: info.messageId };
+    } catch (error) {
+      console.error(`❌ Failed to send email to ${email}:`, error.message);
+      throw new Error(`Email sending failed: ${error.message}`);
+    }
   }
 }
 
